@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type Transaction = {
   id: string;
@@ -11,6 +11,8 @@ type Transaction = {
   description: string | null;
   created_at: string;
   receipt_url: string | null;
+  transaction_date: string;
+  period: string | null;
 };
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Salary', 'Rent', 'Other'];
@@ -22,13 +24,17 @@ export default function TransactionsScreen() {
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   async function fetchTransactions() {
-    const { data, error } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('transaction_date', { ascending: false });
     if (error) Alert.alert('Error', error.message);
     else setTransactions(data || []);
   }
@@ -64,12 +70,16 @@ export default function TransactionsScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const period = date.slice(0, 7); // YYYY-MM
+
     const { data, error } = await supabase.from('transactions').insert({
       user_id: user.id,
       amount: numAmount,
       type,
       category,
       description: description || null,
+      transaction_date: date,
+      period,
     }).select().single();
 
     if (error || !data) {
@@ -88,6 +98,7 @@ export default function TransactionsScreen() {
     setCategory('');
     setDescription('');
     setReceipt(null);
+    setDate(new Date().toISOString().split('T')[0]);
     fetchTransactions();
   }
 
@@ -97,9 +108,17 @@ export default function TransactionsScreen() {
     else fetchTransactions();
   }
 
+  const grouped = transactions.reduce((acc, t) => {
+    const key = t.period || 'No period';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(t);
+    return acc;
+  }, {} as Record<string, Transaction[]>);
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>New Transaction</Text>
+
       <View style={styles.typeRow}>
         <TouchableOpacity style={[styles.typeBtn, type === 'expense' && styles.typeBtnActive]} onPress={() => setType('expense')}>
           <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive]}>Expense</Text>
@@ -108,7 +127,10 @@ export default function TransactionsScreen() {
           <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>Income</Text>
         </TouchableOpacity>
       </View>
+
       <TextInput style={styles.input} placeholder="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+
       <View style={styles.categories}>
         {CATEGORIES.map((cat) => (
           <TouchableOpacity key={cat} style={[styles.catBtn, category === cat && styles.catBtnActive]} onPress={() => setCategory(cat)}>
@@ -116,36 +138,41 @@ export default function TransactionsScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
       <TextInput style={styles.input} placeholder="Description (optional)" value={description} onChangeText={setDescription} />
+
       <TouchableOpacity style={styles.photoBtn} onPress={pickImage}>
         <Text style={styles.photoBtnText}>{receipt ? 'Photo selected' : 'Attach receipt photo'}</Text>
       </TouchableOpacity>
       {receipt && <Image source={{ uri: receipt }} style={styles.preview} />}
+
       <TouchableOpacity style={styles.addButton} onPress={addTransaction}>
         <Text style={styles.addButtonText}>Add Transaction</Text>
       </TouchableOpacity>
-      <Text style={styles.listTitle}>Recent</Text>
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.itemCategory}>{item.category}</Text>
-              {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
-              {item.receipt_url && <Image source={{ uri: item.receipt_url }} style={styles.receiptThumb} />}
+
+      <Text style={styles.listTitle}>By Period</Text>
+      {Object.keys(grouped).sort().reverse().map((period) => (
+        <View key={period} style={styles.periodBlock}>
+          <Text style={styles.periodTitle}>{period}</Text>
+          {grouped[period].map((item) => (
+            <View key={item.id} style={styles.item}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.itemCategory}>{item.category}</Text>
+                {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
+                <Text style={styles.itemDate}>{item.transaction_date}</Text>
+                {item.receipt_url && <Image source={{ uri: item.receipt_url }} style={styles.receiptThumb} />}
+              </View>
+              <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
+                {item.type === 'income' ? '+' : '-'}{item.amount}
+              </Text>
+              <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteBtn}>
+                <Text style={styles.deleteText}>✕</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
-              {item.type === 'income' ? '+' : '-'}{item.amount}
-            </Text>
-            <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteBtn}>
-              <Text style={styles.deleteText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>No transactions yet</Text>}
-      />
-    </View>
+          ))}
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -169,14 +196,16 @@ const styles = StyleSheet.create({
   addButton: { backgroundColor: '#111', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 28 },
   addButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   listTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#111' },
+  periodBlock: { marginBottom: 24 },
+  periodTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8, color: '#333' },
   item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 10 },
   itemCategory: { fontWeight: '600', fontSize: 16 },
   itemDesc: { color: '#666', fontSize: 13, marginTop: 2 },
+  itemDate: { color: '#999', fontSize: 12, marginTop: 2 },
   itemAmount: { fontSize: 16, fontWeight: '700', marginRight: 12 },
   income: { color: '#16a34a' },
   expense: { color: '#dc2626' },
   deleteBtn: { padding: 6 },
   deleteText: { color: '#999', fontSize: 18 },
   receiptThumb: { width: 40, height: 40, borderRadius: 6, marginTop: 6 },
-  empty: { textAlign: 'center', color: '#999', marginTop: 40 },
 });
