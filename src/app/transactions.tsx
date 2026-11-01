@@ -11,6 +11,8 @@ type Transaction = {
   created_at: string;
 };
 
+const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Salary', 'Rent', 'Other'];
+
 export default function TransactionsScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState('');
@@ -58,6 +60,12 @@ export default function TransactionsScreen() {
     }
   }
 
+  async function deleteTransaction(id: string) {
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (error) Alert.alert('Error', error.message);
+    else fetchTransactions();
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>New Transaction</Text>
@@ -78,7 +86,19 @@ export default function TransactionsScreen() {
       </View>
 
       <TextInput style={styles.input} placeholder="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Category" value={category} onChangeText={setCategory} />
+
+      <View style={styles.categories}>
+        {CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat}
+            style={[styles.catBtn, category === cat && styles.catBtnActive]}
+            onPress={() => setCategory(cat)}
+          >
+            <Text style={[styles.catText, category === cat && styles.catTextActive]}>{cat}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <TextInput style={styles.input} placeholder="Description (optional)" value={description} onChangeText={setDescription} />
 
       <TouchableOpacity style={styles.addButton} onPress={addTransaction}>
@@ -91,13 +111,16 @@ export default function TransactionsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.itemCategory}>{item.category}</Text>
               {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
             </View>
             <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
               {item.type === 'income' ? '+' : '-'}{item.amount}
             </Text>
+            <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteBtn}>
+              <Text style={styles.deleteText}>✕</Text>
+            </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.empty}>No transactions yet</Text>}
@@ -115,14 +138,21 @@ const styles = StyleSheet.create({
   typeText: { fontWeight: '600', color: '#333' },
   typeTextActive: { color: '#fff' },
   input: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, fontSize: 16, borderWidth: 1, borderColor: '#e5e5e5' },
+  categories: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  catBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e5e5' },
+  catBtnActive: { backgroundColor: '#111', borderColor: '#111' },
+  catText: { fontSize: 14, color: '#333' },
+  catTextActive: { color: '#fff' },
   addButton: { backgroundColor: '#111', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 28 },
   addButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   listTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#111' },
-  item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 10 },
+  item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 10 },
   itemCategory: { fontWeight: '600', fontSize: 16 },
   itemDesc: { color: '#666', fontSize: 13, marginTop: 2 },
-  itemAmount: { fontSize: 16, fontWeight: '700' },
+  itemAmount: { fontSize: 16, fontWeight: '700', marginRight: 12 },
   income: { color: '#16a34a' },
   expense: { color: '#dc2626' },
+  deleteBtn: { padding: 6 },
+  deleteText: { color: '#999', fontSize: 18 },
   empty: { textAlign: 'center', color: '#999', marginTop: 40 },
 });
