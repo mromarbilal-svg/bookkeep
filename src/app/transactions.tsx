@@ -151,9 +151,20 @@ export default function TransactionsScreen() {
       </TouchableOpacity>
 
       <Text style={styles.listTitle}>By Period</Text>
-      {Object.keys(grouped).sort().reverse().map((period) => (
+      {Object.keys(grouped).sort().reverse().map((period) => {
+        const items = grouped[period];
+  const income = items.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const expense = items.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+  const balance = income - expense;
+
+  return (
         <View key={period} style={styles.periodBlock}>
           <Text style={styles.periodTitle}>{period}</Text>
+          <View style={styles.summaryRow}>
+  <Text style={styles.income}>Income: {income.toFixed(2)}</Text>
+  <Text style={styles.expense}>Expenses: {expense.toFixed(2)}</Text>
+  <Text style={balance >= 0 ? styles.income : styles.expense}>Balance: {balance.toFixed(2)}</Text>
+</View>
           {grouped[period].map((item) => (
             <View key={item.id} style={styles.item}>
               <View style={{ flex: 1 }}>
@@ -171,7 +182,7 @@ export default function TransactionsScreen() {
             </View>
           ))}
         </View>
-      ))}
+      );})}
     </ScrollView>
   );
 }
@@ -208,4 +219,5 @@ const styles = StyleSheet.create({
   deleteBtn: { padding: 6 },
   deleteText: { color: '#999', fontSize: 18 },
   receiptThumb: { width: 40, height: 40, borderRadius: 6, marginTop: 6 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
 });
