@@ -25,12 +25,15 @@ export default function TransactionsScreen() {
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [receipt, setReceipt] = useState<string | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [closedPeriods, setClosedPeriods] = useState<string[]>([]);
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   async function fetchTransactions() {
+    const { data: closed } = await supabase.from('closed_periods').select('period');
+if (closed) setClosedPeriods(closed.map(c => c.period));
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
@@ -66,7 +69,8 @@ export default function TransactionsScreen() {
     if (!numAmount || !category) {
       Alert.alert('Error', 'Amount and category are required');
       return;
-    }
+}
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -101,6 +105,18 @@ export default function TransactionsScreen() {
     setDate(new Date().toISOString().split('T')[0]);
     fetchTransactions();
   }
+  async function closePeriod(period: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase.from('closed_periods').insert({
+    user_id: user.id,
+    period,
+  });
+
+  if (error) Alert.alert('Error', error.message);
+  else setClosedPeriods([...closedPeriods, period]);
+}
 
   async function deleteTransaction(id: string) {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
@@ -165,6 +181,13 @@ export default function TransactionsScreen() {
   <Text style={styles.expense}>Expenses: {expense.toFixed(2)}</Text>
   <Text style={balance >= 0 ? styles.income : styles.expense}>Balance: {balance.toFixed(2)}</Text>
 </View>
+{!closedPeriods.includes(period) ? (
+  <TouchableOpacity style={styles.closeBtn} onPress={() => closePeriod(period)}>
+    <Text style={styles.closeBtnText}>Close period</Text>
+  </TouchableOpacity>
+) : (
+  <Text style={styles.closedText}>Closed</Text>
+)}
           {grouped[period].map((item) => (
             <View key={item.id} style={styles.item}>
               <View style={{ flex: 1 }}>
@@ -220,4 +243,7 @@ const styles = StyleSheet.create({
   deleteText: { color: '#999', fontSize: 18 },
   receiptThumb: { width: 40, height: 40, borderRadius: 6, marginTop: 6 },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
+  closeBtn: { backgroundColor: '#111', padding: 10, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 12 },
+closeBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+closedText: { color: '#16a34a', fontWeight: '600', marginBottom: 12 },
 });
