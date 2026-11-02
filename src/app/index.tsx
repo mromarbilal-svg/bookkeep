@@ -5,6 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
+  const [companyName, setCompanyName] = useState('');
   const [summary, setSummary] = useState({ income: 0, expense: 0 });
 
   useEffect(() => {
@@ -13,6 +14,14 @@ export default function HomeScreen() {
       if (!session) router.replace('/(auth)/login');
       else fetchSummary();
     });
+
+    async function loadCompanyName() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase.from('profiles').select('company_name').eq('id', user.id).single();
+  if (data?.company_name) setCompanyName(data.company_name);
+}
+loadCompanyName();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
@@ -43,7 +52,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Bookkeep</Text>
+        <Text style={styles.title}>{companyName || 'Bookkeep'}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
 
@@ -68,6 +77,11 @@ export default function HomeScreen() {
         <Text style={styles.cardTitle}>Transactions</Text>
         <Text style={styles.cardSubtitle}>Add and view income & expenses</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card} onPress={() => router.push('/settings' as any)}>
+  <Text style={styles.cardTitle}>Settings</Text>
+  <Text style={styles.cardSubtitle}>Company name and preferences</Text>
+</TouchableOpacity>
 
       <TouchableOpacity style={styles.logout} onPress={signOut}>
         <Text style={styles.logoutText}>Log out</Text>
