@@ -13,6 +13,7 @@ type Transaction = {
   receipt_url: string | null;
   transaction_date: string;
   period: string | null;
+  currency: string | null;
 };
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Salary', 'Rent', 'Other'];
@@ -26,6 +27,7 @@ export default function TransactionsScreen() {
   const [receipt, setReceipt] = useState<string | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [closedPeriods, setClosedPeriods] = useState<string[]>([]);
+  const [currency, setCurrency] = useState('SEK');
 
   useEffect(() => {
     fetchTransactions();
@@ -84,6 +86,7 @@ if (closed) setClosedPeriods(closed.map(c => c.period));
       description: description || null,
       transaction_date: date,
       period,
+      currency,
     }).select().single();
 
     if (error || !data) {
@@ -143,6 +146,17 @@ if (closed) setClosedPeriods(closed.map(c => c.period));
           <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>Income</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.typeRow}>
+  {['SEK', 'AED', 'USD'].map((cur) => (
+    <TouchableOpacity
+      key={cur}
+      style={[styles.typeBtn, currency === cur && styles.typeBtnActive]}
+      onPress={() => setCurrency(cur)}
+    >
+      <Text style={[styles.typeText, currency === cur && styles.typeTextActive]}>{cur}</Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
       <TextInput style={styles.input} placeholder="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" />
       <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
@@ -197,7 +211,7 @@ if (closed) setClosedPeriods(closed.map(c => c.period));
                 {item.receipt_url && <Image source={{ uri: item.receipt_url }} style={styles.receiptThumb} />}
               </View>
               <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
-                {item.type === 'income' ? '+' : '-'}{item.amount}
+                {item.type === 'income' ? '+' : '-'}{item.amount} {item.currency || 'SEK'}
               </Text>
               <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteBtn}>
                 <Text style={styles.deleteText}>✕</Text>
