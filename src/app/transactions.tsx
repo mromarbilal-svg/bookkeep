@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -121,6 +123,73 @@ if (closed) setClosedPeriods(closed.map(c => c.period));
   else setClosedPeriods([...closedPeriods, period]);
 }
 
+async function downloadPDF(period: string) {
+  const items = grouped[period] || [];
+  const income = items.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const expense = items.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+  const balance = income - expense;
+  const monthName = new Date(period + '-01').toLocaleString('en', { month: 'long', year: 'numeric' });
+
+  const html = `
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; color: #111; }
+          h1 { margin-bottom: 4px; }
+          .subtitle { color: #666; margin-bottom: 24px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
+          th { background: #f8f9fa; font-weight: 600; }
+          .amount { text-align: right; font-weight: 600; }
+          .income { color: #16a34a; }
+          .expense { color: #dc2626; }
+          .summary { margin: 16px 0 24px; font-size: 15px; }
+        </style>
+      </head>
+      <body>
+        <h1>${monthName}</h1>
+        <p class="subtitle">Period summary</p>
+        <div class="summary">
+          <strong>Income:</strong> ${income.toFixed(2)} &nbsp;&nbsp;
+          <strong>Expenses:</strong> ${expense.toFixed(2)} &nbsp;&nbsp;
+          <strong>Balance:</strong> ${balance.toFixed(2)}
+        </div>
+        <table>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th style="text-align:right">Amount</th>
+          </tr>
+          ${items.map(item => `
+            <tr>
+              <td>${item.transaction_date || ''}</td>
+              <td>${item.category}</td>
+              <td>${item.description || ''}</td>
+              <td class="amount ${item.type}">${item.type === 'income' ? '+' : '-'}${item.amount} ${item.currency || ''}</td>
+            </tr>
+          `).join('')}
+        </table>
+      </body>
+    </html>
+  `;
+
+  if (typeof window !== 'undefined') {
+    // Web: open print dialog with clean HTML
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 300);
+    }
+  } else {
+    // Mobile
+    const { uri } = await Print.printToFileAsync({ html });
+    await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: monthName });
+  }
+}
+
   async function deleteTransaction(id: string) {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (error) Alert.alert('Error', error.message);
@@ -195,6 +264,9 @@ if (closed) setClosedPeriods(closed.map(c => c.period));
   <Text style={styles.expense}>Expenses: {expense.toFixed(2)}</Text>
   <Text style={balance >= 0 ? styles.income : styles.expense}>Balance: {balance.toFixed(2)}</Text>
 </View>
+<TouchableOpacity style={styles.closeBtn} onPress={() => downloadPDF(period)}>
+  <Text style={styles.closeBtnText}>Download PDF</Text>
+</TouchableOpacity>
 {!closedPeriods.includes(period) ? (
   <TouchableOpacity style={styles.closeBtn} onPress={() => closePeriod(period)}>
     <Text style={styles.closeBtnText}>Close period</Text>
