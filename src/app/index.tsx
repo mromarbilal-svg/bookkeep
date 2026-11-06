@@ -3,10 +3,17 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+const RATES: Record<string, number> = {
+  SEK: 1,
+  USD: 0.095,   // 1 SEK ≈ 0.095 USD
+  AED: 0.35,    // 1 SEK ≈ 0.35 AED
+};
+
 export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [companyName, setCompanyName] = useState('');
   const [summary, setSummary] = useState({ income: 0, expense: 0 });
+  const [displayCurrency, setDisplayCurrency] = useState('SEK');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,16 +37,24 @@ loadCompanyName();
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [displayCurrency]);
 
-  async function fetchSummary() {
-    const { data } = await supabase.from('transactions').select('amount, type');
-    if (!data) return;
+async function fetchSummary() {
+  const { data } = await supabase.from('transactions').select('amount, type, currency');
+  if (!data) return;
 
-    const income = data.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
-    const expense = data.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
-    setSummary({ income, expense });
-  }
+  let income = 0;
+  let expense = 0;
+
+  data.forEach((t) => {
+    const rate = RATES[t.currency || 'SEK'] || 1;
+    const converted = Number(t.amount) / rate * (RATES[displayCurrency] || 1);
+    if (t.type === 'income') income += converted;
+    else expense += converted;
+  });
+
+  setSummary({ income, expense });
+}
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -58,9 +73,18 @@ loadCompanyName();
 
       <View style={styles.summaryCard}>
         <Text style={styles.balanceLabel}>Balance</Text>
-        <Text style={[styles.balance, balance >= 0 ? styles.positive : styles.negative]}>
-          {balance.toFixed(2)}
-        </Text>
+<Text style={[styles.balance, balance >= 0 ? styles.positive : styles.negative]}>
+  {balance.toFixed(2)} {displayCurrency}
+</Text>
+        <View style={styles.summaryRow}>
+  {['SEK', 'USD', 'AED'].map((cur) => (
+    <TouchableOpacity key={cur} onPress={() => setDisplayCurrency(cur)}>
+      <Text style={[styles.summaryLabel, displayCurrency === cur && { fontWeight: '700', color: '#111' }]}>
+        {cur}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
         <View style={styles.summaryRow}>
           <View>
             <Text style={styles.summaryLabel}>Income</Text>
