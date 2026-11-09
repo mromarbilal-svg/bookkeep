@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -30,6 +31,8 @@ export default function TransactionsScreen() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [closedPeriods, setClosedPeriods] = useState<string[]>([]);
   const [currency, setCurrency] = useState('SEK');
+  const { theme } = useTheme();
+const isDark = theme === 'dark';
 
   useEffect(() => {
     fetchTransactions();
@@ -205,7 +208,7 @@ async function downloadPDF(period: string) {
   }, {} as Record<string, Transaction[]>);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
       <Text style={styles.title}>New Transaction</Text>
 
       <View style={styles.typeRow}>

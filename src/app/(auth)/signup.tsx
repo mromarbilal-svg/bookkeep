@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -7,6 +8,8 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+const isDark = theme === 'dark';
 
   async function signUp() {
     setLoading(true);
@@ -20,7 +23,7 @@ export default function SignupScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
       <Text style={styles.title}>Sign up</Text>
       <TextInput
         style={styles.input}

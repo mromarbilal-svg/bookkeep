@@ -7,6 +7,7 @@ export default function SettingsScreen() {
   const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(false);
   const { theme, toggleTheme } = useTheme();
+const isDark = theme === 'dark';
 
   useEffect(() => {
     loadProfile();
@@ -36,7 +37,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
       <Text style={styles.title}>Settings</Text>
       <Text style={styles.label}>Company name</Text>
       <TextInput
