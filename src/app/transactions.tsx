@@ -179,6 +179,7 @@ async function downloadPDF(period: string) {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(html);
+      printWindow.document.title = `${period}.pdf`;
       printWindow.document.close();
       printWindow.focus();
       setTimeout(() => printWindow.print(), 300);
