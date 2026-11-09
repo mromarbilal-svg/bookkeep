@@ -212,41 +212,99 @@ async function downloadPDF(period: string) {
       <Text style={styles.title}>New Transaction</Text>
 
       <View style={styles.typeRow}>
-        <TouchableOpacity style={[styles.typeBtn, type === 'expense' && styles.typeBtnActive]} onPress={() => setType('expense')}>
-          <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive]}>Expense</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.typeBtn, type === 'income' && styles.typeBtnActive]} onPress={() => setType('income')}>
-          <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>Income</Text>
-        </TouchableOpacity>
+<TouchableOpacity 
+  style={[
+    styles.typeBtn, 
+    { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
+    type === 'expense' && styles.typeBtnActive
+  ]} 
+  onPress={() => setType('expense')}
+>
+  <Text style={[styles.typeText, { color: isDark ? '#fff' : '#333' }, type === 'expense' && styles.typeTextActive]}>
+    Expense
+  </Text>
+</TouchableOpacity>
+<TouchableOpacity 
+  style={[
+    styles.typeBtn, 
+    { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
+    type === 'income' && styles.typeBtnActive
+  ]} 
+  onPress={() => setType('income')}
+>
+  <Text style={[styles.typeText, { color: isDark ? '#fff' : '#333' }, type === 'income' && styles.typeTextActive]}>
+    Income
+  </Text>
+</TouchableOpacity>
       </View>
       <View style={styles.typeRow}>
-  {['SEK', 'AED', 'USD'].map((cur) => (
-    <TouchableOpacity
-      key={cur}
-      style={[styles.typeBtn, currency === cur && styles.typeBtnActive]}
-      onPress={() => setCurrency(cur)}
-    >
-      <Text style={[styles.typeText, currency === cur && styles.typeTextActive]}>{cur}</Text>
-    </TouchableOpacity>
-  ))}
+{['SEK', 'AED', 'USD'].map((cur) => (
+  <TouchableOpacity
+    key={cur}
+    style={[
+      styles.typeBtn,
+      { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
+      currency === cur && styles.typeBtnActive
+    ]}
+    onPress={() => setCurrency(cur)}
+  >
+    <Text style={[styles.typeText, { color: isDark ? '#fff' : '#333' }, currency === cur && styles.typeTextActive]}>
+      {cur}
+    </Text>
+  </TouchableOpacity>
+))}
 </View>
 
-      <TextInput style={styles.input} placeholder="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+      <TextInput 
+  style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
+  placeholder="Amount" 
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={amount} 
+  onChangeText={setAmount} 
+  keyboardType="numeric" 
+/>
+      <TextInput 
+  style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
+  placeholder="Date (YYYY-MM-DD)" 
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={date} 
+  onChangeText={setDate} 
+/>
 
       <View style={styles.categories}>
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity key={cat} style={[styles.catBtn, category === cat && styles.catBtnActive]} onPress={() => setCategory(cat)}>
-            <Text style={[styles.catText, category === cat && styles.catTextActive]}>{cat}</Text>
-          </TouchableOpacity>
-        ))}
+{CATEGORIES.map((cat) => (
+  <TouchableOpacity 
+    key={cat} 
+    style={[
+      styles.catBtn, 
+      { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
+      category === cat && styles.catBtnActive
+    ]} 
+    onPress={() => setCategory(cat)}
+  >
+    <Text style={[styles.catText, { color: isDark ? '#fff' : '#333' }, category === cat && styles.catTextActive]}>
+      {cat}
+    </Text>
+  </TouchableOpacity>
+))}
       </View>
 
-      <TextInput style={styles.input} placeholder="Description (optional)" value={description} onChangeText={setDescription} />
+      <TextInput 
+  style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
+  placeholder="Description (optional)" 
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={description} 
+  onChangeText={setDescription} 
+/>
 
-      <TouchableOpacity style={styles.photoBtn} onPress={pickImage}>
-        <Text style={styles.photoBtnText}>{receipt ? 'Photo selected' : 'Attach receipt photo'}</Text>
-      </TouchableOpacity>
+<TouchableOpacity 
+  style={[styles.photoBtn, { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
+  onPress={pickImage}
+>
+  <Text style={[styles.photoBtnText, { color: isDark ? '#fff' : '#333' }]}>
+    {receipt ? 'Photo selected' : 'Attach receipt photo'}
+  </Text>
+</TouchableOpacity>
       {receipt && <Image source={{ uri: receipt }} style={styles.preview} />}
 
       <TouchableOpacity style={styles.addButton} onPress={addTransaction}>
@@ -279,11 +337,11 @@ async function downloadPDF(period: string) {
   <Text style={styles.closedText}>Closed</Text>
 )}
           {grouped[period].map((item) => (
-            <View key={item.id} style={styles.item}>
+            <View style={[styles.item, { backgroundColor: isDark ? '#1f1f1f' : '#fff' }]}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.itemCategory}>{item.category}</Text>
-                {item.description && <Text style={styles.itemDesc}>{item.description}</Text>}
-                <Text style={styles.itemDate}>{item.transaction_date}</Text>
+                <Text style={[styles.itemCategory, { color: isDark ? '#fff' : '#111' }]}>{item.category}</Text>
+                {item.description && <Text style={[styles.itemDesc, { color: isDark ? '#aaa' : '#666' }]}>{item.description}</Text>}
+                <Text style={[styles.itemDate, { color: isDark ? '#ccc' : '#999' }]}>{item.transaction_date}</Text>
                 {item.receipt_url && <Image source={{ uri: item.receipt_url }} style={styles.receiptThumb} />}
               </View>
               <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
