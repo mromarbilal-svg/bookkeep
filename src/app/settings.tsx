@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
   const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     loadProfile();
@@ -46,6 +48,9 @@ export default function SettingsScreen() {
       <TouchableOpacity style={styles.button} onPress={save} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save'}</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={toggleTheme}>
+  <Text style={styles.buttonText}>Switch to {theme === 'light' ? 'Dark' : 'Light'} mode</Text>
+</TouchableOpacity>
     </View>
   );
 }

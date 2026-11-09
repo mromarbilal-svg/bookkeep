@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -14,6 +15,8 @@ export default function HomeScreen() {
   const [companyName, setCompanyName] = useState('');
   const [summary, setSummary] = useState({ income: 0, expense: 0 });
   const [displayCurrency, setDisplayCurrency] = useState('SEK');
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -65,9 +68,11 @@ async function fetchSummary() {
   const balance = summary.income - summary.expense;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>{companyName || 'Bookkeep'}</Text>
+        <Text style={[styles.title, { color: isDark ? '#fff' : '#111' }]}>
+  {companyName || 'Bookkeep'}
+</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
 
