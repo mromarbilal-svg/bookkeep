@@ -216,7 +216,7 @@ async function downloadPDF(period: string) {
   style={[
     styles.typeBtn, 
     { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
-    type === 'expense' && styles.typeBtnActive
+    type === 'expense' && { backgroundColor: isDark ? '#3b82f6' : '#111', borderColor: isDark ? '#3b82f6' : '#111' }
   ]} 
   onPress={() => setType('expense')}
 >
@@ -228,7 +228,7 @@ async function downloadPDF(period: string) {
   style={[
     styles.typeBtn, 
     { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
-    type === 'income' && styles.typeBtnActive
+    type === 'income' && { backgroundColor: isDark ? '#3b82f6' : '#111', borderColor: isDark ? '#3b82f6' : '#111' }
   ]} 
   onPress={() => setType('income')}
 >
@@ -244,7 +244,7 @@ async function downloadPDF(period: string) {
     style={[
       styles.typeBtn,
       { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
-      currency === cur && styles.typeBtnActive
+      currency === cur && { backgroundColor: isDark ? '#3b82f6' : '#111', borderColor: isDark ? '#3b82f6' : '#111' }
     ]}
     onPress={() => setCurrency(cur)}
   >
@@ -278,7 +278,7 @@ async function downloadPDF(period: string) {
     style={[
       styles.catBtn, 
       { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
-      category === cat && styles.catBtnActive
+      category === cat && { backgroundColor: isDark ? '#3b82f6' : '#111', borderColor: isDark ? '#3b82f6' : '#111' }
     ]} 
     onPress={() => setCategory(cat)}
   >
