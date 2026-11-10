@@ -38,18 +38,24 @@ const isDark = theme === 'dark';
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
-      <Text style={styles.title}>Settings</Text>
-      <Text style={styles.label}>Company name</Text>
-      <TextInput
-        style={styles.input}
-        value={companyName}
-        onChangeText={setCompanyName}
-        placeholder="Enter company name"
-      />
-      <TouchableOpacity style={styles.button} onPress={save} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={toggleTheme}>
+<Text style={[styles.title, { color: isDark ? '#fff' : '#111' }]}>Settings</Text>
+<Text style={[styles.label, { color: isDark ? '#aaa' : '#666' }]}>Company name</Text>
+<TextInput
+  style={[styles.input, { 
+    backgroundColor: isDark ? '#1f1f1f' : '#fff', 
+    color: isDark ? '#fff' : '#111',
+    borderColor: isDark ? '#333' : '#e5e5e5'
+  }]}
+  value={companyName}
+  onChangeText={setCompanyName}
+  placeholder="Enter company name"
+  placeholderTextColor={isDark ? '#888' : '#999'}
+/>
+<TouchableOpacity style={[styles.button, { backgroundColor: isDark ? '#3b82f6' : '#111' }]} onPress={save} disabled={loading}>
+  <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save'}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={[styles.button, { backgroundColor: isDark ? '#3b82f6' : '#111', marginTop: 12 }]} onPress={toggleTheme}>
   <Text style={styles.buttonText}>Switch to {theme === 'light' ? 'Dark' : 'Light'} mode</Text>
 </TouchableOpacity>
     </View>
