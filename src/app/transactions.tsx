@@ -347,9 +347,29 @@ async function downloadPDF(period: string) {
               <Text style={[styles.itemAmount, item.type === 'income' ? styles.income : styles.expense]}>
                 {item.type === 'income' ? '+' : '-'}{item.amount} {item.currency || 'SEK'}
               </Text>
-              <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteBtn}>
-                <Text style={styles.deleteText}>✕</Text>
-              </TouchableOpacity>
+<TouchableOpacity 
+  onPress={() => {
+    if (typeof window !== 'undefined') {
+      // Web
+      if (window.confirm('Are you sure you want to delete this transaction?')) {
+        deleteTransaction(item.id);
+      }
+    } else {
+      // Mobile
+      Alert.alert(
+        'Delete transaction',
+        'Are you sure you want to delete this transaction?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction(item.id) }
+        ]
+      );
+    }
+  }} 
+  style={styles.deleteBtn}
+>
+  <Text style={styles.deleteText}>✕</Text>
+</TouchableOpacity>
             </View>
           ))}
         </View>
