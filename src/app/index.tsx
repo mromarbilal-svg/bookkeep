@@ -17,6 +17,10 @@ export default function HomeScreen() {
   const [displayCurrency, setDisplayCurrency] = useState('SEK');
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+const chartData = {
+  labels: ['Income', 'Expenses'],
+  datasets: [{ data: [summary.income || 0, summary.expense || 0] }]
+};
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -81,6 +85,22 @@ async function fetchSummary() {
 <Text style={[styles.balance, balance >= 0 ? styles.positive : styles.negative]}>
   {balance.toFixed(2)} {displayCurrency}
 </Text>
+<View style={{ marginVertical: 16 }}>
+  <View style={{ flexDirection: 'row', height: 24, borderRadius: 12, overflow: 'hidden', backgroundColor: isDark ? '#333' : '#eee' }}>
+    <View style={{ 
+      flex: summary.income || 1, 
+      backgroundColor: '#16a34a' 
+    }} />
+    <View style={{ 
+      flex: summary.expense || 1, 
+      backgroundColor: '#dc2626' 
+    }} />
+  </View>
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+    <Text style={{ color: '#16a34a', fontWeight: '600' }}>Income</Text>
+    <Text style={{ color: '#dc2626', fontWeight: '600' }}>Expenses</Text>
+  </View>
+</View>
         <View style={styles.summaryRow}>
   {['SEK', 'USD', 'AED'].map((cur) => (
     <TouchableOpacity key={cur} onPress={() => setDisplayCurrency(cur)}>
