@@ -80,8 +80,8 @@ async function fetchSummary() {
         <Text style={styles.email}>{user.email}</Text>
       </View>
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.balanceLabel}>Balance</Text>
+      <View style={[styles.summaryCard, { backgroundColor: isDark ? '#1f1f1f' : '#fff' }]}>
+        <Text style={[styles.balanceLabel, { color: isDark ? '#aaa' : '#666' }]}>Balance</Text>
 <Text style={[styles.balance, balance >= 0 ? styles.positive : styles.negative]}>
   {balance.toFixed(2)} {displayCurrency}
 </Text>
@@ -104,7 +104,7 @@ async function fetchSummary() {
         <View style={styles.summaryRow}>
   {['SEK', 'USD', 'AED'].map((cur) => (
     <TouchableOpacity key={cur} onPress={() => setDisplayCurrency(cur)}>
-      <Text style={[styles.summaryLabel, displayCurrency === cur && { fontWeight: '700', color: '#111' }]}>
+      <Text style={[styles.summaryLabel,  displayCurrency === cur && { fontWeight: '700', color: '#111' }]}>
         {cur}
       </Text>
     </TouchableOpacity>
@@ -112,12 +112,12 @@ async function fetchSummary() {
 </View>
         <View style={styles.summaryRow}>
           <View>
-            <Text style={styles.summaryLabel}>Income</Text>
-            <Text style={styles.income}>{summary.income.toFixed(2)}</Text>
+            <Text style={[styles.summaryLabel, { color: isDark ? '#aaa' : '#888' }]}>Income</Text>
+            <Text style={[styles.income, { color: isDark ? '#16a34a' : '#16a34a' }]}>{summary.income.toFixed(2)}</Text>
           </View>
           <View>
-            <Text style={styles.summaryLabel}>Expenses</Text>
-            <Text style={styles.expense}>{summary.expense.toFixed(2)}</Text>
+            <Text style={[styles.summaryLabel, { color: isDark ? '#aaa' : '#888' }]}>Expenses</Text>
+            <Text style={[styles.expense, { color: isDark ? '#dc2626' : '#dc2626' }]}>{summary.expense.toFixed(2)}</Text>
           </View>
         </View>
       </View>
