@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -33,6 +34,7 @@ export default function TransactionsScreen() {
   const [currency, setCurrency] = useState('SEK');
   const { theme } = useTheme();
 const isDark = theme === 'dark';
+const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
@@ -263,13 +265,47 @@ async function downloadPDF(period: string) {
   onChangeText={setAmount} 
   keyboardType="numeric" 
 />
-      <TextInput 
-  style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
-  placeholder="Date (YYYY-MM-DD)" 
-  placeholderTextColor={isDark ? '#888' : '#999'}
-  value={date} 
-  onChangeText={setDate} 
-/>
+{typeof window !== 'undefined' ? (
+  // Web: use native HTML date input
+  <input
+    type="date"
+    value={date}
+    onChange={(e) => setDate(e.target.value)}
+    style={{
+      width: '100%',
+      padding: 14,
+      borderRadius: 12,
+      border: `1px solid ${isDark ? '#333' : '#e5e5e5'}`,
+      backgroundColor: isDark ? '#1f1f1f' : '#fff',
+      color: isDark ? '#fff' : '#111',
+      fontSize: 16,
+      marginBottom: 12,
+    }}
+  />
+) : (
+  // Mobile
+  <>
+    <TouchableOpacity 
+      style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
+      onPress={() => setShowDatePicker(true)}
+    >
+      <Text style={{ color: isDark ? '#fff' : '#111' }}>{date}</Text>
+    </TouchableOpacity>
+    {showDatePicker && (
+      <DateTimePicker
+        value={new Date(date)}
+        mode="date"
+        display="default"
+        onChange={(event, selectedDate) => {
+          setShowDatePicker(false);
+          if (selectedDate) {
+            setDate(selectedDate.toISOString().split('T')[0]);
+          }
+        }}
+      />
+    )}
+  </>
+)}
 
       <View style={styles.categories}>
 {CATEGORIES.map((cat) => (
