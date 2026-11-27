@@ -6,6 +6,11 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+const RATES: Record<string, number> = {
+  SEK: 1,
+  USD: 0.095,
+  AED: 0.35,
+};
 
 type Transaction = {
   id: string;
@@ -37,6 +42,7 @@ export default function TransactionsScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [summaryCurrency, setSummaryCurrency] = useState('SEK');
 
   useEffect(() => {
     fetchTransactions();
@@ -371,17 +377,46 @@ const grouped = filtered.reduce((acc, t) => {
       <Text style={styles.listTitle}>By Period</Text>
       {Object.keys(grouped).sort().reverse().map((period) => {
         const items = grouped[period];
-  const income = items.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-  const expense = items.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
-  const balance = income - expense;
+        const income = items
+        .filter(t => t.type === 'income')
+        .reduce((s, t) => {
+        const inSek = Number(t.amount) / (RATES[t.currency || 'SEK'] || 1);
+        return s + inSek * (RATES[summaryCurrency] || 1);
+  }, 0);
 
+const expense = items
+  .filter(t => t.type === 'expense')
+  .reduce((s, t) => {
+    const inSek = Number(t.amount) / (RATES[t.currency || 'SEK'] || 1);
+    return s + inSek * (RATES[summaryCurrency] || 1);
+  }, 0);
+
+const balance = income - expense;
   return (
         <View key={period} style={styles.periodBlock}>
           <Text style={styles.periodTitle}>{period}</Text>
+          <View style={styles.typeRow}>
+  {['SEK', 'USD', 'AED'].map((cur) => (
+    <TouchableOpacity
+      key={cur}
+      style={[
+        styles.typeBtn,
+        { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' },
+        summaryCurrency === cur && { backgroundColor: isDark ? '#3b82f6' : '#111', borderColor: isDark ? '#3b82f6' : '#111' }
+      ]}
+      onPress={() => setSummaryCurrency(cur)}
+    >
+      <Text style={[styles.typeText, { color: isDark ? '#fff' : '#333' }, summaryCurrency === cur && { color: '#fff' }]}>
+        {cur}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
           <View style={styles.summaryRow}>
-  <Text style={styles.income}>Income: {income.toFixed(2)}</Text>
-  <Text style={styles.expense}>Expenses: {expense.toFixed(2)}</Text>
-  <Text style={balance >= 0 ? styles.income : styles.expense}>Balance: {balance.toFixed(2)}</Text>
+<Text style={styles.income}>Income: {income.toFixed(2)} {summaryCurrency}</Text>
+<Text style={styles.expense}>Expenses: {expense.toFixed(2)} {summaryCurrency}</Text>
+<Text style={balance >= 0 ? styles.income : styles.expense}>Balance: {balance.toFixed(2)} {summaryCurrency}</Text>
 </View>
 <TouchableOpacity style={styles.closeBtn} onPress={() => downloadPDF(period)}>
   <Text style={styles.closeBtnText}>Download PDF</Text>
