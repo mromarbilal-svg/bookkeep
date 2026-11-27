@@ -291,24 +291,14 @@ const grouped = filtered.reduce((acc, t) => {
   keyboardType="numeric" 
 />
 {typeof window !== 'undefined' ? (
-  // Web: use native HTML date input
-  <input
-    type="date"
+  <TextInput
+    style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]}
+    placeholder="Date (YYYY-MM-DD)"
+    placeholderTextColor={isDark ? '#888' : '#999'}
     value={date}
-    onChange={(e) => setDate(e.target.value)}
-    style={{
-      width: '100%',
-      padding: 14,
-      borderRadius: 12,
-      border: `1px solid ${isDark ? '#333' : '#e5e5e5'}`,
-      backgroundColor: isDark ? '#1f1f1f' : '#fff',
-      color: isDark ? '#fff' : '#111',
-      fontSize: 16,
-      marginBottom: 12,
-    }}
+    onChangeText={setDate}
   />
 ) : (
-  // Mobile
   <>
     <TouchableOpacity 
       style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', borderColor: isDark ? '#333' : '#e5e5e5' }]} 
