@@ -33,8 +33,9 @@ export default function TransactionsScreen() {
   const [closedPeriods, setClosedPeriods] = useState<string[]>([]);
   const [currency, setCurrency] = useState('SEK');
   const { theme } = useTheme();
-const isDark = theme === 'dark';
-const [showDatePicker, setShowDatePicker] = useState(false);
+  const isDark = theme === 'dark';
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchTransactions();
@@ -202,12 +203,17 @@ async function downloadPDF(period: string) {
     else fetchTransactions();
   }
 
-  const grouped = transactions.reduce((acc, t) => {
-    const key = t.period || 'No period';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(t);
-    return acc;
-  }, {} as Record<string, Transaction[]>);
+const filtered = transactions.filter(t => 
+  t.category.toLowerCase().includes(search.toLowerCase()) ||
+  (t.description || '').toLowerCase().includes(search.toLowerCase())
+);
+
+const grouped = filtered.reduce((acc, t) => {
+  const key = t.period || 'No period';
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(t);
+  return acc;
+}, {} as Record<string, Transaction[]>);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
@@ -346,6 +352,13 @@ async function downloadPDF(period: string) {
       <TouchableOpacity style={styles.addButton} onPress={addTransaction}>
         <Text style={styles.addButtonText}>Add Transaction</Text>
       </TouchableOpacity>
+      <TextInput
+  style={[styles.input, { backgroundColor: isDark ? '#1f1f1f' : '#fff', color: isDark ? '#fff' : '#111', borderColor: isDark ? '#333' : '#e5e5e5' }]}
+  placeholder="Search category or description"
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={search}
+  onChangeText={setSearch}
+/>
 
       <Text style={styles.listTitle}>By Period</Text>
       {Object.keys(grouped).sort().reverse().map((period) => {
