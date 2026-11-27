@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
-const isDark = theme === 'dark';
+  const isDark = theme === 'dark';
 
   async function signIn() {
     setLoading(true);
@@ -18,6 +18,8 @@ const isDark = theme === 'dark';
     if (error) Alert.alert('Error', error.message);
     else router.replace('/');
   }
+
+  
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
@@ -40,6 +42,17 @@ const isDark = theme === 'dark';
       <TouchableOpacity style={styles.button} onPress={signIn} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Log in'}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={async () => {
+  const email = prompt('Enter your email');
+  if (!email) return;
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) Alert.alert('Error', error.message);
+  else Alert.alert('Check your email', 'Password reset link sent');
+}}>
+  <Text style={{ color: '#666', marginTop: 16, textAlign: 'center' }}>Forgot password?</Text>
+</TouchableOpacity>
+      
       <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
