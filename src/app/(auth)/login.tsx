@@ -25,20 +25,30 @@ export default function LoginScreen() {
     <View style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
       <Text style={styles.title}>Log in</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+  style={[styles.input, { 
+    backgroundColor: isDark ? '#1f1f1f' : '#fff', 
+    color: isDark ? '#fff' : '#111',
+    borderColor: isDark ? '#333' : '#e5e5e5'
+  }]}
+  placeholder="Email"
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={email}
+  onChangeText={setEmail}
+  autoCapitalize="none"
+  keyboardType="email-address"
+/>
       <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+  style={[styles.input, { 
+    backgroundColor: isDark ? '#1f1f1f' : '#fff', 
+    color: isDark ? '#fff' : '#111',
+    borderColor: isDark ? '#333' : '#e5e5e5'
+  }]}
+  placeholder="Password"
+  placeholderTextColor={isDark ? '#888' : '#999'}
+  value={password}
+  onChangeText={setPassword}
+  secureTextEntry
+/>
       <TouchableOpacity style={styles.button} onPress={signIn} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Log in'}</Text>
       </TouchableOpacity>
