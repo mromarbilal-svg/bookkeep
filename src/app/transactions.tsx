@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const RATES: Record<string, number> = {
   SEK: 1,
   USD: 0.095,
@@ -43,10 +43,17 @@ export default function TransactionsScreen() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [summaryCurrency, setSummaryCurrency] = useState('SEK');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
   }, []);
+
+async function onRefresh() {
+  setRefreshing(true);
+  await fetchTransactions();
+  setRefreshing(false);
+}
 
 async function fetchTransactions() {
   setLoading(true);
@@ -223,7 +230,12 @@ const grouped = filtered.reduce((acc, t) => {
 }, {} as Record<string, Transaction[]>);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}>
+    <ScrollView 
+  style={[styles.container, { backgroundColor: isDark ? '#111' : '#f8f9fa' }]}
+  refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  }
+>
       <Text style={styles.title}>New Transaction</Text>
 
       <View style={styles.typeRow}>
