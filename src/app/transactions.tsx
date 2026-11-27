@@ -36,21 +36,22 @@ export default function TransactionsScreen() {
   const isDark = theme === 'dark';
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
-  async function fetchTransactions() {
-    const { data: closed } = await supabase.from('closed_periods').select('period');
-if (closed) setClosedPeriods(closed.map(c => c.period));
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .order('transaction_date', { ascending: false });
-    if (error) Alert.alert('Error', error.message);
-    else setTransactions(data || []);
-  }
+async function fetchTransactions() {
+  setLoading(true);
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .order('transaction_date', { ascending: false });
+  if (error) Alert.alert('Error', error.message);
+  else setTransactions(data || []);
+  setLoading(false);
+}
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -359,6 +360,13 @@ const grouped = filtered.reduce((acc, t) => {
   value={search}
   onChangeText={setSearch}
 />
+{loading ? (
+  <Text style={{ textAlign: 'center', color: isDark ? '#aaa' : '#666', marginTop: 40 }}>Loading...</Text>
+) : Object.keys(grouped).length === 0 ? (
+  <Text style={{ textAlign: 'center', color: isDark ? '#aaa' : '#666', marginTop: 40 }}>
+    {search ? 'No matching transactions' : 'No transactions yet'}
+  </Text>
+) : null}
 
       <Text style={styles.listTitle}>By Period</Text>
       {Object.keys(grouped).sort().reverse().map((period) => {
